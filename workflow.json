@@ -1,0 +1,48 @@
+{
+  "workflow_name": "OutboundLeadGeneration",
+  "description": "Simplified workflow to find, score, and contact leads",
+  "steps": [
+    {
+      "id": "prospect_search",
+      "agent": "ProspectSearchAgent",
+      "inputs": {},
+      "instructions": "Return a few mock leads for testing.",
+      "tools": [],
+      "output_schema": {
+        "leads": [
+          { "company": "string", "contact_name": "string", "email": "string" }
+        ]
+      }
+    },
+    {
+      "id": "scoring",
+      "agent": "ScoringAgent",
+      "inputs": { "leads": "{{prospect_search.output.leads}}" },
+      "instructions": "Assign a score to each lead based on simple rules.",
+      "tools": [],
+      "output_schema": { "ranked_leads": "array" }
+    },
+    {
+      "id": "outreach_content",
+      "agent": "OutreachContentAgent",
+      "inputs": { "ranked_leads": "{{scoring.output.ranked_leads}}" },
+      "instructions": "Generate personalized outreach messages using OpenAI.",
+      "tools": [
+        { "name": "OpenAI", "config": { "api_key": "{{OPENAI_API_KEY}}" } }
+      ],
+      "output_schema": {
+        "messages": [
+          { "lead": "string", "email_body": "string", "subject": "string" }
+        ]
+      }
+    },
+    {
+      "id": "feedback_trainer",
+      "agent": "FeedbackTrainerAgent",
+      "inputs": { "messages": "{{outreach_content.output.messages}}" },
+      "instructions": "Suggest improvements for the next run.",
+      "tools": [],
+      "output_schema": { "recommendations": "array" }
+    }
+  ]
+}
